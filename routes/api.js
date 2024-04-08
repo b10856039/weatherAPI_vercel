@@ -46,11 +46,11 @@ class WeatherAPI {
     const weather_job = new WeatherDataFetcher(authorizationId)
 
     if(fetchType === 'week'){
-      await weather_job.createWeatherJob(job1_week_city_url,'city',`./data/weather_city.json`)
-      await weather_job.createWeatherJob(job2_week_town_url,'town',`./data/weather_town.json`)
+      await weather_job.createWeatherJob(job1_week_city_url,'city',`/data/weather_city.json`)
+      await weather_job.createWeatherJob(job2_week_town_url,'town',`/data/weather_town.json`)
       return res.json({'success':'true'})
     }else if(fetchType === 'none'){
-      await weather_job.createWeatherJob([job1_current_url,job1_current_second_url],fetchType,`./data/weather_current.json`)
+      await weather_job.createWeatherJob([job1_current_url,job1_current_second_url],fetchType,`/data/weather_current.json`)
       return res.json({'success':'true'})
     }else{
       return res.json({'success':'false','error':'no-fetchType'})
@@ -103,7 +103,7 @@ class WeatherAPI {
 
   //讀取天氣資料
   async loadData(fileName) {
-    const jsonData = await fs.promises.readFile(`./data/${fileName}`, 'utf8');
+    const jsonData = await fs.promises.readFile(`/data/${fileName}`, 'utf8');
     return JSON.parse(jsonData)['data'];
   }
 
