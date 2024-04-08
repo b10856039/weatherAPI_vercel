@@ -103,7 +103,7 @@ class WeatherAPI {
 
   //讀取天氣資料
   async loadData(fileName) {
-    const jsonData = await fs.promises.readFile(`/data/${fileName}`, 'utf8');
+    const jsonData = await fetch(`/data/${fileName}`);
     return JSON.parse(jsonData)['data'];
   }
 
