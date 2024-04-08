@@ -1,5 +1,6 @@
 const express = require('express');
 const fs = require('fs');
+const fetch = require('node-fetch')
 
 const WeatherDataFetcher = require('./updateData')
 
