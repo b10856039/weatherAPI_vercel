@@ -104,7 +104,8 @@ class WeatherAPI {
 
   //讀取天氣資料
   async loadData(fileName) {
-    const jsonData = await fetch(`/data/${fileName}`);
+    const url = `https://${process.env.VERCEL_URL}/data/${fileName}`;
+    const jsonData = await fetch(url);
     return JSON.parse(jsonData)['data'];
   }
 
