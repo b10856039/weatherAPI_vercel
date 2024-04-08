@@ -106,7 +106,12 @@ class WeatherAPI {
   async loadData(fileName) {
     const url = `https://${process.env.VERCEL_URL}/data/${fileName}`;
     console.log(url)
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers:{
+        accept: 'application/json',
+        'User-agent': 'learning app',
+      }
+    });
     const jsonData = await response.json();
     return jsonData['data'];
   }
