@@ -10,25 +10,6 @@
         {
             "src":"/(.*)",
             "dest":"/"
-        },
-        {
-            "src": "/data/.*",
-            "headers": { "Content-Type": "application/json" }
-        },
-        {
-            "src": "/javascripts/.*",
-            "headers": { "Content-Type": "application/json" }
-
-        }
-    ],
-    "crons": [
-        {
-          "path": "/api/v2/updateWeatherData?fetchType=week",
-          "schedule": "0 0 * * *"
-        },
-        {
-          "path": "/api/v2/updateWeatherData?fetchType=none",
-          "schedule": "0 0 * * *"
         }
     ]
 }

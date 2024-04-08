@@ -38,9 +38,4 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-//測試用(cron)
-// weather_job1.fetchData(job1_week_city_url, 'city', './data/weather_city.json');
-// weather_job2.fetchData(job2_week_town_url, 'town', './data/weather_town.json');
-// weather_current_job1.fetchData([job1_current_url,job1_current_second_url],'none','./data/weather_current.json')
-
 module.exports = app;
