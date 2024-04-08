@@ -10,6 +10,15 @@
         {
             "src":"/(.*)",
             "dest":"/"
+        },
+        {
+            "src": "/data/.*",
+            "headers": { "Content-Type": "application/json" }
+        },
+        {
+            "src": "/javascripts/.*",
+            "headers": { "Content-Type": "application/json" }
+
         }
     ],
     "crons": [
