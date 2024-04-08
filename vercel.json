@@ -1,0 +1,25 @@
+{ 
+    "version": 2, 
+    "builds":[
+        {
+            "src":"index.js",
+            "use":"@vercel/node"
+        }
+    ],
+    "routes":[
+        {
+            "src":"/(.*)",
+            "dest":"/"
+        }
+    ],
+    "crons": [
+        {
+          "path": "/api/v2/updateWeatherData?fetchType=week",
+          "schedule": "0 0 * * *"
+        },
+        {
+          "path": "/api/v2/updateWeatherData?fetchType=none",
+          "schedule": "0 0 * * *"
+        }
+    ]
+}
