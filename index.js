@@ -20,15 +20,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors())
-app.use('/', indexRouter);
-app.use('/api', apiRouter);
 
+const corsOptions = {
+  origin: [
+    'http://localhost:5173',
+  ],
+  methods: 'GET,HEAD,POST',
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
+
+
+app.use('/', indexRouter);
+app.use('/api', apiRouter);
 
 //404 Handler
 app.use(function(req, res, next) {
