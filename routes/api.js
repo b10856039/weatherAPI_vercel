@@ -1,5 +1,6 @@
 const express = require('express');
 const fs = require('fs');
+const path =require('path')
 const fetch = require('node-fetch')
 
 const WeatherDataFetcher = require('./updateData')
@@ -103,17 +104,12 @@ class WeatherAPI {
   }
 
   //讀取天氣資料
-  async loadData(fileName) {
-    const url = `https://${process.env.VERCEL_URL}/data/${fileName}`;
-    console.log(url)
-    const response = await fetch(url, {
-      headers:{
-        accept: 'application/json',
-        'User-agent': 'learning app',
-      }
-    });
-    const jsonData = await response.json();
-    return jsonData['data'];
+  loadData(fileName) {
+    let Path = path.join(process.cwd(),`public/data/${fileName}` );
+    let jsonData = fs.readFileSync(Path);
+    return JSON.parse(jsonData)['data'];
+
+    
   }
 
   //城市or城鎮過濾器
