@@ -74,31 +74,26 @@ class WeatherAPI {
       const data =await response.json()
       return data.records.locations[0].location[0]
     }else if(fetchType === 'none'){
-      let targetUrl =['O-A0003-001','O-A0001-001']
-      let tempData = null;
-      let mergefetchPromises = null;
-      let fetchPromises = null;
-      for(let i=0 ; i<targetUrl.length ; i++){
-        const response = await fetch(`${apiUrl}${targetUrl[i]}?Authorization=${authorizationId}`);
-        if(i==0){
-          tempData = await response.json()
-          tempData = tempData.records.Station
-
-        }else{
-          fetchPromises = await response.json()
-          mergefetchPromises = {
-            ...fetchPromises,
-            records: {
-              ...fetchPromises.records,
-              Station: [...fetchPromises.records.Station, ...tempData]
-            }
-          }
-        }         
-      }
-      fetchPromises = mergefetchPromises 
-      let responses =null;
-      responses = fetchPromises
-      return responses.records
+      const targetUrls = ['O-A0003-001', 'O-A0001-001'];
+      const fetchPromises = targetUrls.map(async (targetUrl) => {
+        const response = await fetch(`${apiUrl}${targetUrl}?Authorization=${authorizationId}`);
+        return response.json();
+      });
+  
+      const responses = await Promise.all(fetchPromises);
+      const mergedRecords = responses.reduce((acc, response) => {
+        console.log(acc,response)
+        if (!acc) {
+          return response.records;
+        } else {
+          return {
+            ...acc,
+            Station: [...acc.Station, ...response.records.Station]
+          };
+        }
+      }, null);
+  
+      return mergedRecords;
     }       
   }
 

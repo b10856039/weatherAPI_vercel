@@ -4,7 +4,7 @@ const path = require('path')
 
 
 
-/* GET default page. */
+//測試伺服器是否成功
 router.get('/', function(req, res, next) {    
     res.render('index', { title: 'Success Open Server' }); 
 });
