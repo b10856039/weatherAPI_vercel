@@ -13,67 +13,201 @@ class WeatherAPI {
 
   //縣市一周氣象API
   getCitiesWeather(req, res, next) {
-    const { cityName, weatherCode, startTime, endTime } = req.query;
-
-    const queryFilter = {'cityName':cityName,'weatherCode':weatherCode,'startTime':startTime,'endTime':endTime,'fetchType':'cities'}
-
+    const { cityName, weatherCode,perType } = req.query;
+    const queryFilter = {'cityName':cityName,'weatherCode':weatherCode,'fetchType':'cities','perType':perType}
     this.handleWeatherRequest(req, res,queryFilter);
   }
   //鄉鎮一周氣象API
   getTownsWeather(req, res, next) {
-    const { cityName, townName, weatherCode, startTime, endTime } = req.query;
-    const queryFilter = {'cityName':cityName,'weatherCode':weatherCode,'startTime':startTime,'endTime':endTime,'fetchType':'towns','secondFilter':townName}
+    const { cityName, townName, weatherCode,perType } = req.query;
+    const queryFilter = {'cityName':cityName,'weatherCode':weatherCode,'fetchType':'towns','secondFilter':townName,'perType':perType}
     this.handleWeatherRequest(req, res,queryFilter);
   }
   //縣市and鄉鎮即時氣象API
   getCurrentWeather(req,res,next){
     const {cityName,townName,queryType,weatherCode} = req.query;  
-    const queryFilter = {'cityName':cityName,'townName':townName,'queryType':queryType,'weatherCode':weatherCode,'fetchType':'none'}  
+    const queryFilter = {'cityName':cityName,'townName':townName,'queryType':queryType,'weatherCode':weatherCode,'fetchType':'current'}  
     this.handleWeatherRequest(req, res, queryFilter);
   }
 
-  async fetchWeatherAPI(cityName, weatherCode, startTime, endTime, fetchType, secondFilter){
+
+  timeProcess(Date) {
+    let year = Date.getFullYear();
+    let month = (Date.getMonth() + 1).toString().padStart(2, '0');
+    let day = Date.getDate().toString().padStart(2, '0');
+    let hours = Date.getHours().toString().padStart(2, '0');
+    let minutes = Date.getMinutes().toString().padStart(2, '0');
+    let seconds = Date.getSeconds().toString().padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  }
+
+  handleUVIData(timeData,newElement){
+    timeData = timeData.map((item,index)=>{
+      let newStartTime = timeData[index].endTime
+      let newEndTime = ''
+
+      if(timeData[index+1] === undefined){
+        let originDate = new Date(newStartTime)
+        originDate.setHours(originDate.getHours()+12)
+        newEndTime = this.timeProcess(originDate)
+
+      }else{          
+        newEndTime = timeData[index+1].startTime
+      }
+
+      let newObject = {
+        startTime:newStartTime,
+        endTime:newEndTime,
+        elementValue: newElement
+      }
+      return [item,newObject]
+    })
+    return timeData.flat()
+  }
+
+  handlePoPData(timeData) {
+      let newData = [];
+      timeData.forEach((item, index) => {
+          let originStartTime = new Date(item.startTime);
+          let originEndTime = new Date(item.endTime);
+          
+          let interval = 3;
+          let currentTime = new Date(originStartTime); // 深層複製原始時間
+          // 以每 interval 小時增加一筆資料，直到 endTime
+          while (currentTime < originEndTime) {
+              let newStartTime = this.timeProcess(currentTime);
+              let newEndTime = this.timeProcess(new Date(currentTime.getTime() + interval * 60 * 60 * 1000));
+
+              newData.push({
+                  startTime: newStartTime,
+                  endTime: newEndTime,
+                  elementValue: item.elementValue
+              });
+              currentTime = new Date(currentTime.getTime() + interval * 60 * 60 * 1000);
+          }
+      });
+      return newData;
+  }
+
+  handleDataOrganization(weather,findElement){    
+    for(const element of findElement){
+      let replaceElementIndex = weather.weatherElement.findIndex((item)=>{
+        return item.elementName === element
+      })  
+      console.log(findElement)
+      console.log(weather.weatherElement[replaceElementIndex])
+      let timeData = weather.weatherElement[replaceElementIndex].time
+      let inputElement = []
+
+      if(element === 'UVI'){
+        inputElement = [
+          {
+            value: ' ',
+            measures: "紫外線指數"
+          },
+          {
+            value: "低量級",
+            "measures": "曝曬級數"
+          }
+        ]
+        timeData = this.handleUVIData(timeData,inputElement)   
+      }else if(element === 'PoP12h'){         
+        timeData = this.handlePoPData(timeData) 
+      }else if(element === 'PoP6h'){
+        timeData = this.handlePoPData(timeData) 
+      }
+      weather.weatherElement[replaceElementIndex].time = timeData 
+    }      
+    return weather
+  }
+
+  async fetchWeatherAPI(cityName, weatherCode, fetchType, secondFilter,perType = undefined){
     const authorizationId = 'CWA-C5F6B52E-9E19-441A-97F0-865BB024FE0D'
     const cityWeatherId = 'F-D0047-';
     const apiUrl ='https://opendata.cwa.gov.tw/api/v1/rest/datastore/'
 
     const cityNumber ={
-      '宜蘭縣':'003',
-      "桃園市":'007',
-      "新竹縣":'011',
-      "苗栗縣":'015',
-      "彰化縣":'019',
-      "南投縣":'023',
-      "雲林縣":'027',
-      "嘉義縣":'031',
-      "屏東縣":'035',
-      "臺東縣":'039',
-      "花蓮縣":'043',
-      "澎湖縣":'047',
-      "基隆市":'051',
-      "新竹市":'055',
-      "嘉義市":'059',
-      "臺北市":'063',
-      "高雄市":'067',
-      "新北市":'071',
-      "臺中市":'075',
-      "臺南市":'079',
-      "連江縣":'083',
-      "金門縣":'087'
+      '宜蘭縣':{'3Hours':'001','Week':'003'},
+      "桃園市":{'3Hours':'005','Week':'007'},
+      "新竹縣":{'3Hours':'009','Week':'011'},
+      "苗栗縣":{'3Hours':'013','Week':'015'},
+      "彰化縣":{'3Hours':'017','Week':'019'},
+      "南投縣":{'3Hours':'021','Week':'023'},
+      "雲林縣":{'3Hours':'025','Week':'027'},
+      "嘉義縣":{'3Hours':'029','Week':'031'},
+      "屏東縣":{'3Hours':'033','Week':'035'},
+      "臺東縣":{'3Hours':'037','Week':'039'},
+      "花蓮縣":{'3Hours':'041','Week':'043'},
+      "澎湖縣":{'3Hours':'045','Week':'047'},
+      "基隆市":{'3Hours':'049','Week':'051'},
+      "新竹市":{'3Hours':'053','Week':'055'},
+      "嘉義市":{'3Hours':'057','Week':'059'},
+      "臺北市":{'3Hours':'061','Week':'063'},
+      "高雄市":{'3Hours':'065','Week':'067'},
+      "新北市":{'3Hours':'069','Week':'071'},
+      "臺中市":{'3Hours':'073','Week':'075'},
+      "臺南市":{'3Hours':'077','Week':'079'},
+      "連江縣":{'3Hours':'081','Week':'083'},
+      "金門縣":{'3Hours':'085','Week':'087'}
+    }
+
+
+
+    const addTimeParam = (time, perType) => {
+        const currentDate = new Date();
+    
+        if (perType === '3Hours') {
+            currentDate.setDate(currentDate.getDate() + 4); // 加 4 天
+            currentDate.setUTCHours(time, 0, 0, 0);
+            const isoDateString = currentDate.toISOString();
+            return `&timeTo=${isoDateString}`;
+        } else if (perType === 'Week') {
+            currentDate.setDate(currentDate.getDate() + 1); // 加 1 天
+            currentDate.setUTCHours(time, 0, 0, 0); // 設置時間為早上6點
+            const isoDateString = currentDate.toISOString();
+            return `&timeFrom=${isoDateString}`;
+        }
+    }
+    
+    let timeFromParam = '';    
+    if (perType === undefined) {
+        perType = 'Week';
+    }
+    
+    let findElement = perType === 'Week' ? ['UVI'] : ['PoP12h','PoP6h']
+    if (perType === 'Week' || perType === '3Hours') {
+        timeFromParam = addTimeParam(6, perType).split('.')[0];
     }
 
     if(fetchType === 'cities'){
-      let targetUrl = `${apiUrl}${cityWeatherId}091`
-      const response = await fetch(`${targetUrl}?Authorization=${authorizationId}&locationName=${cityName}`);
-      const data =await response.json()
-      return data.records.locations[0].location[0]
+    
+      let APItype = perType === 'Week' ? '091' : '089'
+      let targetUrl = `${apiUrl}${cityWeatherId}${APItype}`
+
+      let fetchURL = `${targetUrl}?Authorization=${authorizationId}&locationName=${cityName}${timeFromParam}`
+      const response = await fetch(fetchURL);
+      let data =await response.json()      
+
+      if(data===undefined){
+        return undefined
+      }
+      
+      data = data.records.locations[0].location[0]      
+      data = this.handleDataOrganization(data,findElement)     
+      return data
+
     }else if(fetchType === 'towns'){
-      const number = cityNumber[cityName]
+      const number = cityNumber[cityName][perType]
       let targetUrl = `${apiUrl}${cityWeatherId}${number}`
-      const response = await fetch(`${targetUrl}?Authorization=${authorizationId}&locationName=${secondFilter}`);
-      const data =await response.json()
-      return data.records.locations[0].location[0]
-    }else if(fetchType === 'none'){
+      let fetchURL = `${targetUrl}?Authorization=${authorizationId}&locationName=${secondFilter}${timeFromParam}`;
+      const response = await fetch(fetchURL);
+      let data =await response.json()
+
+      data = data.records.locations[0].location[0]      
+      data = this.handleDataOrganization(data,findElement)     
+      return data
+
+    }else if(fetchType === 'current'){
       const targetUrls = ['O-A0003-001', 'O-A0001-001'];
       const fetchPromises = targetUrls.map(async (targetUrl) => {
         const response = await fetch(`${apiUrl}${targetUrl}?Authorization=${authorizationId}`);
@@ -82,7 +216,6 @@ class WeatherAPI {
   
       const responses = await Promise.all(fetchPromises);
       const mergedRecords = responses.reduce((acc, response) => {
-        console.log(acc,response)
         if (!acc) {
           return response.records;
         } else {
@@ -96,6 +229,7 @@ class WeatherAPI {
       return mergedRecords;
     }       
   }
+  
 
   //檢查使用type檔案與取得對應資料
   async handleWeatherRequest(req, res, queryFilter) {
@@ -117,16 +251,16 @@ class WeatherAPI {
 
     const cityName = queryFilter.cityName
     const weatherCode = queryFilter.weatherCode
-    const startTime = queryFilter.startTime
-    const endTime = queryFilter.endTime
     const fetchType = queryFilter.fetchType
     const secondFilter = queryFilter.secondFilter
 
-    if(queryFilter.fetchType !== 'none'){  
-      result = await this.fetchWeatherAPI(cityName, weatherCode, startTime, endTime, fetchType, secondFilter)
+    if(queryFilter.fetchType !== 'current'){  
+      const perType = queryFilter.perType
+
+      result = await this.fetchWeatherAPI(cityName, weatherCode, fetchType, secondFilter,perType)
     }else{      
-      let data= await this.fetchWeatherAPI(cityName, weatherCode, startTime, endTime, fetchType, secondFilter)
-      console.log(data)
+      let data= await this.fetchWeatherAPI(cityName, weatherCode, fetchType, secondFilter)
+
       let queryData = data['Station'].find(item => {
         if(queryFilter.queryType === 'CITY'){
           return item.GeoInfo.CountyName === queryFilter.cityName
