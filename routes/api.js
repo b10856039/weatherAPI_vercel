@@ -157,7 +157,7 @@ class WeatherAPI {
         const currentDate = new Date();
     
         if (perType === '3Hours') {
-            currentDate.setDate(currentDate.getDate() + 4); // 加 4 天
+            currentDate.setDate(currentDate.getDate() + 2); // 加 2 天
             currentDate.setUTCHours(time, 0, 0, 0);
             const isoDateString = currentDate.toISOString();
             return `&timeTo=${isoDateString}`;
