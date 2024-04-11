@@ -157,7 +157,7 @@ class WeatherAPI {
         const currentDate = new Date();
     
         if (perType === '3Hours') {
-            currentDate.setDate(currentDate.getDate() + 2); // 加 2 天
+            currentDate.setDate(currentDate.getDate() + 3); // 加 2 天
             currentDate.setUTCHours(time, 0, 0, 0);
             const isoDateString = currentDate.toISOString();
             return `&timeTo=${isoDateString}`;
@@ -175,8 +175,12 @@ class WeatherAPI {
     }
     
     let findElement = perType === 'Week' ? ['UVI'] : ['PoP12h','PoP6h']
-    if (perType === 'Week' || perType === '3Hours') {
-        timeFromParam = addTimeParam(6, perType).split('.')[0];
+    if (perType === 'Week') {
+      timeFromParam = addTimeParam(6, perType).split('.')[0];
+    }
+
+    if (perType === '3Hours'){
+      timeFromParam = addTimeParam(0, perType).split('.')[0];
     }
 
     if(fetchType === 'cities'){
