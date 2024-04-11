@@ -1,7 +1,9 @@
 const express = require('express');
-const fs = require('fs');
+const fs = require('fs').promises;
 const path =require('path')
 const fetch = require('node-fetch')
+
+const Processor = require('../public/javascripts/weatherData.js')
 
 class WeatherAPI {
   constructor() {
@@ -30,132 +32,20 @@ class WeatherAPI {
     this.handleWeatherRequest(req, res, queryFilter);
   }
 
-
-  timeProcess(Date) {
-    let year = Date.getFullYear();
-    let month = (Date.getMonth() + 1).toString().padStart(2, '0');
-    let day = Date.getDate().toString().padStart(2, '0');
-    let hours = Date.getHours().toString().padStart(2, '0');
-    let minutes = Date.getMinutes().toString().padStart(2, '0');
-    let seconds = Date.getSeconds().toString().padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-  }
-
-  handleUVIData(timeData,newElement){
-    timeData = timeData.map((item,index)=>{
-      let newStartTime = timeData[index].endTime
-      let newEndTime = ''
-
-      if(timeData[index+1] === undefined){
-        let originDate = new Date(newStartTime)
-        originDate.setHours(originDate.getHours()+12)
-        newEndTime = this.timeProcess(originDate)
-
-      }else{          
-        newEndTime = timeData[index+1].startTime
-      }
-
-      let newObject = {
-        startTime:newStartTime,
-        endTime:newEndTime,
-        elementValue: newElement
-      }
-      return [item,newObject]
-    })
-    return timeData.flat()
-  }
-
-  handlePoPData(timeData) {
-      let newData = [];
-      timeData.forEach((item, index) => {
-          let originStartTime = new Date(item.startTime);
-          let originEndTime = new Date(item.endTime);
-          
-          let interval = 3;
-          let currentTime = new Date(originStartTime); // 深層複製原始時間
-          // 以每 interval 小時增加一筆資料，直到 endTime
-          while (currentTime < originEndTime) {
-              let newStartTime = this.timeProcess(currentTime);
-              let newEndTime = this.timeProcess(new Date(currentTime.getTime() + interval * 60 * 60 * 1000));
-
-              newData.push({
-                  startTime: newStartTime,
-                  endTime: newEndTime,
-                  elementValue: item.elementValue
-              });
-              currentTime = new Date(currentTime.getTime() + interval * 60 * 60 * 1000);
-          }
-      });
-      return newData;
-  }
-
-  handleDataOrganization(weather,findElement){    
-    for(const element of findElement){
-      let replaceElementIndex = weather.weatherElement.findIndex((item)=>{
-        return item.elementName === element
-      })  
-      console.log(findElement)
-      console.log(weather.weatherElement[replaceElementIndex])
-      let timeData = weather.weatherElement[replaceElementIndex].time
-      let inputElement = []
-
-      if(element === 'UVI'){
-        inputElement = [
-          {
-            value: ' ',
-            measures: "紫外線指數"
-          },
-          {
-            value: "低量級",
-            "measures": "曝曬級數"
-          }
-        ]
-        timeData = this.handleUVIData(timeData,inputElement)   
-      }else if(element === 'PoP12h'){         
-        timeData = this.handlePoPData(timeData) 
-      }else if(element === 'PoP6h'){
-        timeData = this.handlePoPData(timeData) 
-      }
-      weather.weatherElement[replaceElementIndex].time = timeData 
-    }      
-    return weather
-  }
-
+  //獲取API的Weather資料
   async fetchWeatherAPI(cityName, weatherCode, fetchType, secondFilter,perType = undefined){
     const authorizationId = 'CWA-C5F6B52E-9E19-441A-97F0-865BB024FE0D'
     const cityWeatherId = 'F-D0047-';
     const apiUrl ='https://opendata.cwa.gov.tw/api/v1/rest/datastore/'
 
-    const cityNumber ={
-      '宜蘭縣':{'3Hours':'001','Week':'003'},
-      "桃園市":{'3Hours':'005','Week':'007'},
-      "新竹縣":{'3Hours':'009','Week':'011'},
-      "苗栗縣":{'3Hours':'013','Week':'015'},
-      "彰化縣":{'3Hours':'017','Week':'019'},
-      "南投縣":{'3Hours':'021','Week':'023'},
-      "雲林縣":{'3Hours':'025','Week':'027'},
-      "嘉義縣":{'3Hours':'029','Week':'031'},
-      "屏東縣":{'3Hours':'033','Week':'035'},
-      "臺東縣":{'3Hours':'037','Week':'039'},
-      "花蓮縣":{'3Hours':'041','Week':'043'},
-      "澎湖縣":{'3Hours':'045','Week':'047'},
-      "基隆市":{'3Hours':'049','Week':'051'},
-      "新竹市":{'3Hours':'053','Week':'055'},
-      "嘉義市":{'3Hours':'057','Week':'059'},
-      "臺北市":{'3Hours':'061','Week':'063'},
-      "高雄市":{'3Hours':'065','Week':'067'},
-      "新北市":{'3Hours':'069','Week':'071'},
-      "臺中市":{'3Hours':'073','Week':'075'},
-      "臺南市":{'3Hours':'077','Week':'079'},
-      "連江縣":{'3Hours':'081','Week':'083'},
-      "金門縣":{'3Hours':'085','Week':'087'}
-    }
+    //讀取要獲取的API
+    const filePath = path.join(__dirname,'..' ,'public', 'json', 'typeOfAPI.json');
+    const responseJSON = await fs.readFile(filePath, 'utf8');
+    const cityNumber = await JSON.parse(responseJSON)
 
-
-
+    //添加獲取時間條件
     const addTimeParam = (time, perType) => {
-        const currentDate = new Date();
-    
+        const currentDate = new Date();    
         if (perType === '3Hours') {
             currentDate.setDate(currentDate.getDate() + 3); // 加 2 天
             currentDate.setUTCHours(time, 0, 0, 0);
@@ -197,7 +87,7 @@ class WeatherAPI {
       }
       
       data = data.records.locations[0].location[0]      
-      data = this.handleDataOrganization(data,findElement)     
+      data = Processor.handleDataOrganization(data,findElement)     
       return data
 
     }else if(fetchType === 'towns'){
@@ -208,7 +98,8 @@ class WeatherAPI {
       let data =await response.json()
 
       data = data.records.locations[0].location[0]      
-      data = this.handleDataOrganization(data,findElement)     
+      data = Processor.handleDataOrganization(data,findElement)
+
       return data
 
     }else if(fetchType === 'current'){
