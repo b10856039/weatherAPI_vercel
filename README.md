@@ -16,6 +16,9 @@
  *   http-errors 1.6.3
  *   morgan 1.9.1
  *   node-fetch 2.7.0
+   
+### 雲端部署
+ * 部署環境 Vercel
 
 ## Web API服務使用範例
 
