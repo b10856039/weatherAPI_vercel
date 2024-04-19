@@ -1,15 +1,16 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var cors = require('cors')
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
+const cors = require('cors')
 
-var indexRouter = require('./routes/index');
-var apiRouter = require('./routes/api');
+const indexRouter = require('./routes/index');
+const apiRouter = require('./routes/api');
 
+require('dotenv').config()
 
-var app = express();
+const app = express();
 
 // Set up Middleware
 app.set('views', path.join(__dirname, 'views'));
@@ -23,7 +24,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const corsOptions = {
   origin: [
-    'http://localhost:5173',
+    process.env.LOCAL_HOST
   ],
   methods: 'GET,HEAD,POST',
   allowedHeaders: ['Content-Type', 'Authorization'],
