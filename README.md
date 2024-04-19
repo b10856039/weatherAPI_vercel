@@ -3,8 +3,10 @@
 
 ## 開發規格與環境說明
 
-### 開發環境
- * 開發環境 Visual Studio Code 1.88.1
+### 開發環境 
+ * 作業系統 Window 10/11
+ * 開發工具 Visual Studio Code 1.88.1 
+ * 環境框架 Node.js 16.13.1
    
 ### 系統語言
  * Javascript ES6
@@ -14,6 +16,7 @@
  *   cookie-parser 1.4.4
  *   cors 2.8.5
  *   debug 2.6.9
+ *   dotenv 16.4.5
  *   ejs 3.1.9 
  *   http-errors 1.6.3
  *   morgan 1.9.1
@@ -21,6 +24,13 @@
    
 ### 雲端部署
  * 部署環境 Vercel
+
+## 建置流程
+
+1. 使用 git clone 或是 直接下載github的檔案
+2. 在有package.json的路徑輸入 ``` XML npm install ``` 下載所需套件
+3. 找到.env檔案，將內部的config進行設定
+4. 輸入 ``` XML  npm start ``` 即可啟動伺服器
 
 ## Web API服務使用範例
 
