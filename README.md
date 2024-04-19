@@ -27,13 +27,17 @@
 
 ## 建置流程
 
-1. 使用 git clone 或是 直接下載github的檔案
+1. 使用 git clone 或是 直接下載github的檔案。
 2. 在有package.json的路徑輸入
    ``` XML
     npm install
-   ``` 下載所需套件
-4. 找到.env檔案，將內部的config進行設定
-5. 輸入 ``` XML  npm start ``` 即可啟動伺服器
+   ```
+   下載所需套件。
+4. 找到.env檔案，將內部的config進行設定。
+5. 輸入 ``` XML
+      npm start
+   ```
+   即可啟動伺服器。
 
 ## Web API服務使用範例
 
