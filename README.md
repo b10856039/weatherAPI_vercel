@@ -1,5 +1,9 @@
 # Side Project專案 臺灣氣象查詢 - 後端伺服器
 此專案為透過Express.js獲取中央氣象局的氣象預報API資料，經資料預處理後再使用自製的API供前端網頁伺服器使用。
+目前已在Vercel進行上線，可透過以下網址前往前端網頁進行使用。
+
+[臺灣氣象查詢](https://tw-weather-info-show-page.vercel.app/ "link")
+
 
 ## 開發規格與環境說明
 
