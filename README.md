@@ -83,7 +83,7 @@ API的請求都需使用以下的基本URL:
      可過濾內容 : MinCI, MaxAT, MaxCI, MinT, UVI, MinAT, MaxT, WS, WD, Td, PoP12h, T, RH, Wx, WeatherDescription
   * "queryType" : 獲取資料類型，提供 "CITY":僅縣市 與 "TOWN":所有鄉鎮。
     
-* 範例連結 :
+3. 成功範例連結 :
 ``` XML
   https://weather-api-rouge-eight.vercel.app/api/v1/weatherWeek/cities?cityName=%E8%87%BA%E4%B8%AD%E5%B8%82&perType=3Hours
 ```
