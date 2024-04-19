@@ -49,7 +49,7 @@
 ### API 基本網址
 API的請求都需使用以下的基本URL:
 ``` XML
-  https://weather-api-rouge-eight.vercel.app/api/v1/
+  http伺服器位址/api/v1/
 ```
 ### 使用方式
 
