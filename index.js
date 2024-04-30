@@ -24,7 +24,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const corsOptions = {
   origin: [
-    process.env.LOCAL_HOST
+    process.env.ONLINE_HOST
   ],
   methods: 'GET,HEAD,POST',
   allowedHeaders: ['Content-Type', 'Authorization'],
