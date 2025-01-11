@@ -12,7 +12,7 @@ class WeatherDataProcessor {
     //UVI資料補齊
     handleUVIData(timeData, newElement) {
       return timeData.map((item, index) => {
-        let newStartTime = item.endTime;
+        let newStartTime = item.EndTime;
         let newEndTime = '';
   
         if (timeData[index + 1] === undefined) {
@@ -20,13 +20,13 @@ class WeatherDataProcessor {
           originDate.setHours(originDate.getHours() + 12);
           newEndTime = this.timeProcess(originDate);
         } else {
-          newEndTime = timeData[index + 1].startTime;
+          newEndTime = timeData[index + 1].StartTime;
         }
   
         let newObject = {
-          startTime: newStartTime,
-          endTime: newEndTime,
-          elementValue: newElement
+          StartTime: newStartTime,
+          EndTime: newEndTime,
+          ElementValue: newElement
         };
         return [item, newObject];
       }).flat();
@@ -35,8 +35,8 @@ class WeatherDataProcessor {
     handlePoPData(timeData) {
       let newData = [];
       timeData.forEach((item) => {
-        let originStartTime = new Date(item.startTime);
-        let originEndTime = new Date(item.endTime);
+        let originStartTime = new Date(item.StartTime);
+        let originEndTime = new Date(item.EndTime);
         
         let interval = 3; 
         let currentTime = new Date(originStartTime);
@@ -46,9 +46,9 @@ class WeatherDataProcessor {
           let newEndTime = this.timeProcess(new Date(currentTime.getTime() + interval * 3600000));
   
           newData.push({
-            startTime: newStartTime,
-            endTime: newEndTime,
-            elementValue: item.elementValue
+            StartTime: newStartTime,
+            EndTime: newEndTime,
+            ElementValue: item.ElementValue
           });
           currentTime = new Date(currentTime.getTime() + interval * 3600000);
         }
@@ -58,26 +58,22 @@ class WeatherDataProcessor {
   
     handleDataOrganization(weather, findElement) {
       for (const element of findElement) {
-        let replaceElementIndex = weather.weatherElement.findIndex((item) => {
-          return item.elementName === element;
+        let replaceElementIndex = weather.WeatherElement.findIndex((item) => {
+          return item.ElementName === element;
         });
         
-        let timeData = weather.weatherElement[replaceElementIndex].time;
+        let timeData = weather.WeatherElement[replaceElementIndex].Time;
         let inputElement = [];
-  
-        if (element === 'UVI') {
+        if (element === '紫外線指數') {
           inputElement = [{
-            value: ' ',
-            measures: "紫外線指數"
-          }, {
-            value: "低量級",
-            measures: "曝曬級數"
+            'UVIndex': "4",
+            'UVExposureLevel': " ",
           }];
           timeData = this.handleUVIData(timeData, inputElement);
-        } else if (element === 'PoP12h' || element === 'PoP6h') {
+        } else if (element === '3小時降雨機率') {
           timeData = this.handlePoPData(timeData);
         }
-        weather.weatherElement[replaceElementIndex].time = timeData;
+        weather.WeatherElement[replaceElementIndex].Time = timeData;
       }
       return weather;
     }

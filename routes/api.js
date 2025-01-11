@@ -73,7 +73,7 @@ class WeatherAPI {
           perType = 'Week';
       }
       
-      let findElement = perType === 'Week' ? ['UVI'] : ['PoP12h','PoP6h']
+      let findElement = perType === 'Week' ? ['紫外線指數'] : ['3小時降雨機率']
       if (perType === 'Week') {
         timeFromParam = addTimeParam(6, perType).split('.')[0];
       }
@@ -81,32 +81,28 @@ class WeatherAPI {
       if (perType === '3Hours'){
         timeFromParam = addTimeParam(0, perType).split('.')[0];
       }
-  
       if(fetchType === 'cities'){
       
         let APItype = perType === 'Week' ? '091' : '089'
         let targetUrl = `${apiUrl}${cityWeatherId}${APItype}`
   
-        let fetchURL = `${targetUrl}?Authorization=${authorizationId}&locationName=${cityName}${timeFromParam}`
-        const response = await fetch(fetchURL);
-        let data =await response.json()      
-  
+        let fetchURL = `${targetUrl}?Authorization=${authorizationId}&LocationName=${cityName}${timeFromParam}`
+        let response = await fetch(fetchURL);
+        let data = await response.json();   
         if(data===undefined){
           return undefined
         }
-        
-        data = data.records.locations[0].location[0]      
+        data = data.records.Locations[0].Location[0] 
         data = Processor.handleDataOrganization(data,findElement)     
         return data
   
       }else if(fetchType === 'towns'){
         const number = cityNumber[cityName][perType]
         let targetUrl = `${apiUrl}${cityWeatherId}${number}`
-        let fetchURL = `${targetUrl}?Authorization=${authorizationId}${secondFilter ? `&locationName=${secondFilter}` : '' }${timeFromParam}`;
+        let fetchURL = `${targetUrl}?Authorization=${authorizationId}${secondFilter ? `&LocationName=${secondFilter}` : '' }${timeFromParam}`;
         const response = await fetch(fetchURL);
-        let data =await response.json()
-  
-        data = data.records.locations[0].location[0]     
+        let data = await response.json();
+        data = data.records.Locations[0].Location[0]     
         data = Processor.handleDataOrganization(data,findElement)
         
         return data
