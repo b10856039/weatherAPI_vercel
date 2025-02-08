@@ -4,6 +4,7 @@
 
 [臺灣氣象查詢](https://tw-weather-info-show-page.vercel.app/ "link")
 
+[前端伺服器Github](https://github.com/b10856039/tw_weather_info_showPage/ "link")
 
 ## 開發規格與環境說明
 
